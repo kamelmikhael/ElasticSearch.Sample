@@ -17,4 +17,4 @@ Using "Serilog.AspNetCore" package, Version="9.0.0"
 ## Run Application using Docker Compose
 
 1. Open terminal and run this command
-   docker-compose -f .\docker-compose.yml -f .\docker-compose.override.yml  up -d --build
+   "docker-compose -f .\docker-compose.yml -f .\docker-compose.override.yml  up -d --build"
