@@ -10,7 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.Configure<ElasticSettings>(builder.Configuration.GetSection(nameof(ElasticSettings)));
 
-builder.Services.AddScoped(typeof(IElasticService<>), typeof(ElasticService<>));
+builder.Services.AddScoped<IElasticDbContext, ElasticDbContext>();
+builder.Services.AddScoped(typeof(IElasticDbSet<>), typeof(ElasticDbSet<>));
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()

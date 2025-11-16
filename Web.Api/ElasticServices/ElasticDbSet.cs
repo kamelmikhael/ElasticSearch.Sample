@@ -1,20 +1,17 @@
 ﻿using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.Options;
-using Nest;
 using Web.Api.Settings;
 
 namespace Web.Api.ElasticServices;
 
-public class ElasticService<T> : IElasticService<T>
+public class ElasticDbSet<T> : IElasticDbSet<T>
 {
-    private readonly ILogger<ElasticService<T>> _logger;
+    private readonly ILogger<ElasticDbSet<T>> _logger;
     private readonly ElasticsearchClient _elasticsearchClient;
     private readonly ElasticSettings _elasticSettings;
 
-    public string IndexName { get; private set; }
-
-    public ElasticService(
-        ILogger<ElasticService<T>> logger,
+    public ElasticDbSet(
+        ILogger<ElasticDbSet<T>> logger,
         IOptions<ElasticSettings> elasticSettingsOption)
     {
         _logger = logger;
@@ -31,6 +28,9 @@ public class ElasticService<T> : IElasticService<T>
         _elasticsearchClient = new(settings);
     }
 
+
+    public string IndexName { get; private set; }
+
     public void SetIndexName(string indexName)
     {
         this.IndexName = indexName;
@@ -40,15 +40,6 @@ public class ElasticService<T> : IElasticService<T>
                                DateTime.UtcNow.ToString());
     }
 
-    public async Task CreateIndexIfNotExistsAsync(string indexName,
-                                                  CancellationToken cancellationToken = default)
-    {
-        if (!_elasticsearchClient.Indices.Exists(indexName).Exists)
-        {
-            await _elasticsearchClient.Indices.CreateAsync(indexName, cancellationToken);
-        }
-    }
-
     public async Task<bool?> AddOrUpdateAsync(T document,
                                         CancellationToken cancellationToken = default)
     {
@@ -56,7 +47,7 @@ public class ElasticService<T> : IElasticService<T>
                                                              i => i.Index(IndexName).OpType(OpType.Index),
                                                              cancellationToken);
 
-        if(!response.IsValidResponse)
+        if (!response.IsValidResponse)
         {
             _logger.LogError("Failed to Add/Update document. Error: {@Error}, at {Time} UTC",
                              response.ElasticsearchServerError,
@@ -92,7 +83,7 @@ public class ElasticService<T> : IElasticService<T>
                                                         g => g.Index(IndexName),
                                                         cancellationToken);
 
-        if(!response.IsValidResponse)
+        if (!response.IsValidResponse)
         {
             _logger.LogError("Failed to Get Document By Key. Error: {@Error}, at {Time} UTC",
                              response.ElasticsearchServerError,
@@ -153,22 +144,4 @@ public class ElasticService<T> : IElasticService<T>
         return response.Deleted;
     }
 
-    public async Task<long?> RemoveAllAsync(string indexName,
-                                      CancellationToken cancellationToken = default)
-    {
-        var response = await _elasticsearchClient.DeleteByQueryAsync<T>(
-            d => d.Indices(indexName)
-                  .Query(q => q.MatchAll()),
-            cancellationToken);
-
-        if (!response.IsValidResponse)
-        {
-            _logger.LogError("Failed to Remove All Documents from {Index}. Error: {@Error}, at {Time} UTC",
-                             indexName,
-                             response.ElasticsearchServerError,
-                             DateTime.UtcNow.ToString());
-        }
-
-        return response.Deleted;
-    }
 }

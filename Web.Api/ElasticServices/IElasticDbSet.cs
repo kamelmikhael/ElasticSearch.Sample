@@ -1,11 +1,10 @@
 ﻿namespace Web.Api.ElasticServices;
 
-public interface IElasticService<T>
+public interface IElasticDbSet<T>
 {
-    void SetIndexName(string indexName);
+    string IndexName { get; }
 
-    Task CreateIndexIfNotExistsAsync(string indexName,
-                                     CancellationToken cancellationToken = default);
+    void SetIndexName(string indexName);
 
     Task<bool?> AddOrUpdateAsync(T document,
                                  CancellationToken cancellationToken = default);
@@ -22,7 +21,4 @@ public interface IElasticService<T>
                                 CancellationToken cancellationToken = default);
 
     Task<long?> RemoveAllAsync(CancellationToken cancellationToken = default);
-
-    Task<long?> RemoveAllAsync(string indexName,
-                               CancellationToken cancellationToken = default);
 }
