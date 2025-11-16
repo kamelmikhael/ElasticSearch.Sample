@@ -14,9 +14,15 @@ builder.Services.AddScoped<IElasticDbContext, ElasticDbContext>();
 builder.Services.AddScoped(typeof(IElasticDbSet<>), typeof(ElasticDbSet<>));
 
 // Configure Serilog
+var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+var assemblyName = Assembly.GetExecutingAssembly().GetName().Name?.ToLower().Replace(".", "-");
+
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
-    .Enrich.WithProperty("Application", Assembly.GetExecutingAssembly().GetName().Name)
+    .Enrich.WithMachineName()
+    .Enrich.WithProcessId()
+    .Enrich.WithThreadId()
+    .Enrich.WithProperty("Application", assemblyName)
     .WriteTo.Console()
     .WriteTo.Elasticsearch(
         new ElasticsearchSinkOptions(
@@ -24,8 +30,9 @@ Log.Logger = new LoggerConfiguration()
             ?? throw new("ElasticSettings:Url settings not found")))
     {
         AutoRegisterTemplate = true,
-        IndexFormat = $"elasticdemo-logs-{DateTime.UtcNow:yyyy-MM}"
+        IndexFormat = $"{assemblyName}-{environment.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy.MM}"
     })
+    .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger();
 
 builder.Host.UseSerilog();
