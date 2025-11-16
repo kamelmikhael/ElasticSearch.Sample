@@ -1,0 +1,25 @@
+services:
+  elasticsearch:
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+
+  kibana:
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+
+  web.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ElasticSettings:Url=http://elasticsearch:9200
+      - ElasticSettings:DefaultIndex=products
+    ports:
+      - "5000:8080"
+

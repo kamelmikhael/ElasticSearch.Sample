@@ -1,0 +1,11 @@
+﻿
+==================================================== elasticsearch
+
+docker-compose -f .\docker-compose.yml -f .\docker-compose.override.yml up -d	
+docker-compose -f .\docker-compose.yml -f .\docker-compose.override.yml up -d --build	
+docker-compose -f .\docker-compose.yml -f .\docker-compose.override.yml down	
+
+
+🟢 Elasticsearch → http://localhost:9200
+
+🟢 Kibana → http://localhost:5601
