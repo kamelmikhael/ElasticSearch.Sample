@@ -10,14 +10,11 @@ namespace Web.Api.Controllers
     [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
-        private readonly ILogger<ProductsController> _logger;
         private readonly IElasticClient _elasticClient;
         private readonly ElasticSettings _elasticSettings;
 
-        public ProductsController(ILogger<ProductsController> logger
-            , IOptions<ElasticSettings> elasticSettingsOptions)
+        public ProductsController(IOptions<ElasticSettings> elasticSettingsOptions)
         {
-            _logger = logger;
             _elasticSettings = elasticSettingsOptions.Value
                 ?? throw new ArgumentNullException("Elastic Settings not found");
 

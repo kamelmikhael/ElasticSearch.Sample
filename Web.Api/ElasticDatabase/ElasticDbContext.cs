@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using Web.Api.Settings;
 
-namespace Web.Api.ElasticServices;
+namespace Web.Api.ElasticDatabase;
 
 public class ElasticDbContext : IElasticDbContext
 {

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Web.Api.ElasticServices;
+using Web.Api.ElasticDatabase;
 using Web.Api.Models;
 
 namespace Web.Api.Controllers;

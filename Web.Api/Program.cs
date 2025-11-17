@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Builder;
+using Logging.Common;
 using Serilog;
-using Serilog.Sinks.Elasticsearch;
-using System.Reflection;
-using Web.Api.ElasticServices;
+using Web.Api.ElasticDatabase;
 using Web.Api.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,27 +12,8 @@ builder.Services.AddScoped<IElasticDbContext, ElasticDbContext>();
 builder.Services.AddScoped(typeof(IElasticDbSet<>), typeof(ElasticDbSet<>));
 
 // Configure Serilog
-var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
-var assemblyName = Assembly.GetExecutingAssembly().GetName().Name?.ToLower().Replace(".", "-");
-
-Log.Logger = new LoggerConfiguration()
-    .Enrich.FromLogContext()
-    .Enrich.WithMachineName()
-    .Enrich.WithProcessId()
-    .Enrich.WithThreadId()
-    .Enrich.WithProperty("Application", assemblyName)
-    .WriteTo.Console()
-    .WriteTo.Elasticsearch(
-        new ElasticsearchSinkOptions(
-            new Uri(builder.Configuration["ElasticSettings:Url"] 
-            ?? throw new("ElasticSettings:Url settings not found")))
-    {
-        AutoRegisterTemplate = true,
-        IndexFormat = $"{assemblyName}-{environment.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy.MM}"
-    })
-    .ReadFrom.Configuration(builder.Configuration)
-    .CreateLogger();
-
+builder.ConfigureSerilog("Web.Api")
+    .ConfigureOpenTelemetry("Web.Api");
 builder.Host.UseSerilog();
 
 builder.Services.AddControllers();
@@ -53,6 +32,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
+
+// Correlation middleware (see below)
+app.UseMiddleware<CorrelationIdMiddleware>();
 
 app.MapControllers();
 

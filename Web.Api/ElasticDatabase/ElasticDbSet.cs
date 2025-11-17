@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using Web.Api.Settings;
 
-namespace Web.Api.ElasticServices;
+namespace Web.Api.ElasticDatabase;
 
 public class ElasticDbSet<T> : IElasticDbSet<T>
 {
@@ -33,7 +33,7 @@ public class ElasticDbSet<T> : IElasticDbSet<T>
 
     public void SetIndexName(string indexName)
     {
-        this.IndexName = indexName;
+        IndexName = indexName;
 
         _logger.LogInformation("Elasticsearch index name set to: {IndexName}, at {Time} UTC.",
                                indexName,
