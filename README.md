@@ -19,5 +19,4 @@ Using "Serilog.AspNetCore" package, Version="9.0.0"
 1. Open terminal and run this command
    "docker-compose -f .\docker-compose.yml -f .\docker-compose.override.yml  up -d --build"
 
-
-https://raw.githubusercontent.com/kamelmikhael/ElasticSearch.Sample/refs/heads/master/Web.Api/swagger-sample.png
+![Swagger](https://raw.githubusercontent.com/kamelmikhael/ElasticSearch.Sample/refs/heads/master/Web.Api/swagger-sample.png)
