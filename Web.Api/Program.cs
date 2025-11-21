@@ -1,14 +1,11 @@
 using Infrastructure.Database;
 using Logging.Common;
 using Serilog;
-using Web.Api.ElasticDatabaseV2;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddInfrastructureDatabase();
-
-builder.Services.AddScoped(typeof(IElasticService<>), typeof(ElasticService<>));
 
 // Configure Serilog
 builder.ConfigureSerilog("Web.Api")

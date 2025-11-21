@@ -1,39 +1,32 @@
+using Elastic.Clients.Elasticsearch;
+using Infrastructure.Database.Data;
 using Microsoft.AspNetCore.Mvc;
-using Web.Api.ElasticDatabaseV2;
 using Web.Api.Models;
 
 namespace Web.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductsController : ControllerBase
+    public class ProductsController(IElasticDbSet<Product> elasticService) : ControllerBase
     {
-        private readonly IElasticService<Product> _elasticService;
-
-        public ProductsController(IElasticService<Product> elasticService)
-        {
-            _elasticService = elasticService;
-        }
-
-        [HttpGet("seed-data")]
-        public IEnumerable<Product> SeedData()
-        {
-            var searchResponse = _elasticService.SeedData();
-
-            return searchResponse;
-        }
+        private readonly IElasticDbSet<Product> _elasticService = elasticService;
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddProduct([FromBody] Product product)
+        public async Task<IActionResult> AddProduct(
+            [FromBody] Product product,
+            CancellationToken cancellationToken)
         {
-            (bool isvalid, string result) = await _elasticService.UpSertDocAsync(product);
-            return isvalid ? Ok(result) : BadRequest("Error happen when Update/Insert document");
+            var result = await _elasticService.AddOrUpdateAsync(product, cancellationToken);
+
+            return result == true ?
+                Ok(new { Message = "Product added/updated successfully." })
+                : StatusCode(500, new { Message = "Failed to add/update product." });
         }
 
-        [HttpGet("search")]
-        public async Task<IActionResult> Search(string keyword)
+        [HttpGet("get-all")]
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            var response = await _elasticService.GetAll(keyword);
+            var response = await _elasticService.GetAllAsync(cancellationToken);
             return Ok(response);
         }
     }
