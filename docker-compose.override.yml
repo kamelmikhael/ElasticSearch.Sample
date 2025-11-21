@@ -14,16 +14,16 @@ services:
     ports:
       - "5601:5601"
 
-  web.api:
-    container_name: web.api
-    depends_on:
-      - elasticsearch
-      - kibana
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=8080
-      - ElasticSettings:Url=http://elasticsearch:9200
-      - ElasticSettings:DefaultIndex=products
-    ports:
-      - "5000:8080"
+  # web.api:
+  #   container_name: web.api
+  #   depends_on:
+  #     - elasticsearch
+  #     - kibana
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ASPNETCORE_HTTP_PORTS=8080
+  #     - ElasticSettings:Url=http://elasticsearch:9200
+  #     - ElasticSettings:DefaultIndex=products
+  #   ports:
+  #     - "5000:8080"
 

@@ -1,5 +1,5 @@
+using Infrastructure.Database.Data;
 using Microsoft.AspNetCore.Mvc;
-using Web.Api.ElasticDatabase;
 
 namespace Web.Api.Controllers;
 
@@ -39,20 +39,21 @@ public class ElasticManagementController(
         return Ok(documents);
     }
 
-    //[HttpGet("get-by-key/{indexName}/{id}")]
-    //public async Task<IActionResult> GetDocById(
-    //    string indexName,
-    //    string id,
-    //    CancellationToken cancellationToken)
-    //{
-    //    var document = await _elasticDbContext.GetDocByKeyAsync<dynamic>(id, indexName, cancellationToken);
-    //    return document is not null
-    //        ? Ok(document)
-    //        : NotFound(new { Message = $"Document not found from Index '{indexName}'." });
-    //}
+    [HttpGet("get-by-key/{indexName}/{key}/{keyword}")]
+    public async Task<IActionResult> GetDocById(
+        string indexName,
+        string key,
+        string keyword,
+        CancellationToken cancellationToken)
+    {
+        var document = await _elasticDbContext.GetDocByKeyAsync<dynamic>(key, keyword, indexName, cancellationToken);
+        return document is not null
+            ? Ok(document)
+            : NotFound(new { Message = $"Document not found from Index '{indexName}'." });
+    }
 
-    [HttpPost("upsert/{indexName}")]
-    public async Task<IActionResult> UpSertUser(
+    [HttpPost("insert/{indexName}")]
+    public async Task<IActionResult> Insert(
         [FromRoute] string indexName,
         [FromBody] dynamic document,
         CancellationToken cancellationToken)
@@ -64,17 +65,18 @@ public class ElasticManagementController(
             : StatusCode(500, new { Message = "Failed to add/update document for Index '{indexName}'." });
     }
 
-    //[HttpDelete("remove/{indexName}/{id}")]
-    //public async Task<IActionResult> DeleteById(
-    //    string indexName,
-    //    string id,
-    //    CancellationToken cancellationToken)
-    //{
-    //    var result = await _elasticDbContext.RemoveDocByKeyAsync(id, indexName, cancellationToken);
-    //    return result
-    //        ? Ok(new { Message = "Document deleted successfully." })
-    //        : NotFound(new { Message = "Document for Index '{indexName}' not found." });
-    //}
+    [HttpDelete("remove/{indexName}/{key}/{keyword}")]
+    public async Task<IActionResult> DeleteByKey(
+        string indexName,
+        string key,
+        string keyword,
+        CancellationToken cancellationToken)
+    {
+        var result = await _elasticDbContext.RemoveDocByKeyAsync<dynamic>(key,keyword, indexName, cancellationToken);
+        return result
+            ? Ok(new { Message = "Document deleted successfully." })
+            : NotFound(new { Message = $"Document for Index '{indexName}' not found." });
+    }
 
     [HttpDelete("remove-all/{indexName}")]
     public async Task<IActionResult> DeleteAllIndexData(

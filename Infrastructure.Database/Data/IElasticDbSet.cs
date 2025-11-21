@@ -1,4 +1,4 @@
-﻿namespace Web.Api.ElasticDatabase;
+﻿namespace Infrastructure.Database.Data;
 
 public interface IElasticDbSet<T>
 {

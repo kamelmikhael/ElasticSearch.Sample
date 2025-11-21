@@ -9,13 +9,13 @@ services:
     networks:
       - elk
 
-  web.api:
-    image: ${DOCKER_REGISTRY-}webapi
-    build:
-      context: .
-      dockerfile: Web.Api/Dockerfile
-    networks:
-      - elk
+  # web.api:
+  #   image: ${DOCKER_REGISTRY-}webapi
+  #   build:
+  #     context: .
+  #     dockerfile: Web.Api/Dockerfile
+  #   networks:
+  #     - elk
 
 networks:
   elk:

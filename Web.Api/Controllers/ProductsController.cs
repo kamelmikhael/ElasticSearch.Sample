@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Nest;
+using Web.Api.ElasticDatabaseV2;
 using Web.Api.Models;
-using Web.Api.Settings;
 
 namespace Web.Api.Controllers
 {
@@ -10,47 +8,33 @@ namespace Web.Api.Controllers
     [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
-        private readonly IElasticClient _elasticClient;
-        private readonly ElasticSettings _elasticSettings;
+        private readonly IElasticService<Product> _elasticService;
 
-        public ProductsController(IOptions<ElasticSettings> elasticSettingsOptions)
+        public ProductsController(IElasticService<Product> elasticService)
         {
-            _elasticSettings = elasticSettingsOptions.Value
-                ?? throw new ArgumentNullException("Elastic Settings not found");
-
-            var settings = new ConnectionSettings(new Uri(_elasticSettings.Url))
-                .DefaultIndex(_elasticSettings.DefaultIndex);
-
-            _elasticClient = new ElasticClient(settings);
+            _elasticService = elasticService;
         }
 
         [HttpGet("seed-data")]
         public IEnumerable<Product> SeedData()
         {
-            // Index (Insert) document
-            var product = new Product { Id = 1, Name = "Laptop", Price = 1200 };
-            _elasticClient.IndexDocument(product);
+            var searchResponse = _elasticService.SeedData();
 
-            // Search
-            var searchResponse = _elasticClient.Search<Product>(s => s
-                .Query(q => q.Match(m => m.Field(f => f.Name).Query("laptop"))));
-
-            return searchResponse.Hits.Select(x => x.Source).ToList();
+            return searchResponse;
         }
 
         [HttpPost("add")]
         public async Task<IActionResult> AddProduct([FromBody] Product product)
         {
-            var response = await _elasticClient.IndexDocumentAsync(product);
-            return Ok(response.Result);
+            (bool isvalid, string result) = await _elasticService.UpSertDocAsync(product);
+            return isvalid ? Ok(result) : BadRequest("Error happen when Update/Insert document");
         }
 
         [HttpGet("search")]
         public async Task<IActionResult> Search(string keyword)
         {
-            var response = await _elasticClient.SearchAsync<Product>(s => s
-                .Query(q => q.Match(m => m.Field(f => f.Name).Query(keyword))));
-            return Ok(response.Documents);
+            var response = await _elasticService.GetAll(keyword);
+            return Ok(response);
         }
     }
 }

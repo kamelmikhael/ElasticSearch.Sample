@@ -1,5 +1,5 @@
+using Infrastructure.Database.Data;
 using Microsoft.AspNetCore.Mvc;
-using Web.Api.ElasticDatabase;
 using Web.Api.Models;
 
 namespace Web.Api.Controllers;

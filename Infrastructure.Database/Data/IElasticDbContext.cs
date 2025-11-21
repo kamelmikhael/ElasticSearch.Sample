@@ -1,4 +1,4 @@
-﻿namespace Web.Api.ElasticDatabase;
+﻿namespace Infrastructure.Database.Data;
 
 public interface IElasticDbContext
 {
@@ -12,6 +12,7 @@ public interface IElasticDbContext
 
     Task<T?> GetDocByKeyAsync<T>(
         string key,
+        string keyword,
         string indexName,
         CancellationToken cancellationToken = default);
 
@@ -30,8 +31,9 @@ public interface IElasticDbContext
         string indexName,
         CancellationToken cancellationToken = default);
 
-    Task<bool> RemoveDocByKeyAsync(
+    Task<bool> RemoveDocByKeyAsync<T>(
         string key,
+        string keyword,
         string indexName,
         CancellationToken cancellationToken = default);
 

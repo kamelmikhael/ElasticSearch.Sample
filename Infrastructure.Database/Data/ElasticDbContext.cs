@@ -1,8 +1,9 @@
 ﻿using Elastic.Clients.Elasticsearch;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Web.Api.Settings;
+using Infrastructure.Database.Settings;
 
-namespace Web.Api.ElasticDatabase;
+namespace Infrastructure.Database.Data;
 
 public class ElasticDbContext : IElasticDbContext
 {
@@ -66,22 +67,30 @@ public class ElasticDbContext : IElasticDbContext
     #endregion
 
     #region Read Document from Index
-    public async Task<T?> GetDocByKeyAsync<T>(string key,
-                                           string indexName,
-                                           CancellationToken cancellationToken = default)
+    public async Task<T?> GetDocByKeyAsync<T>(
+        string key,
+        string keyword,
+        string indexName,
+        CancellationToken cancellationToken = default)
     {
-        var response = await _elasticsearchClient.GetAsync<T>(key,
-            s => s.Index(indexName),
+        var response = await _elasticsearchClient.SearchAsync<T>(
+            s => s.Indices(indexName)
+                  .Query(q => 
+                         q.Match(m => 
+                                 m.Field(f => 
+                                         f.Suffix(key))
+                                  .Query(keyword))),
             cancellationToken);
 
         if (!response.IsValidResponse)
         {
-            _logger.LogError("Failed to Get Document By Key. Error: {@Error}, at {Time} UTC",
-                             response.ElasticsearchServerError,
-                             DateTime.UtcNow.ToString());
+            _logger.LogError("Failed to Get Document By {Key}. Error: {@Error}, at {Time} UTC",
+                key,
+                response.ElasticsearchServerError,
+                DateTime.UtcNow.ToString());
         }
 
-        return response.Source;
+        return response.Documents.FirstOrDefault();
     }
 
     public async Task<IEnumerable<T>> GetAllDocsAsync<T>(string indexName,
@@ -143,17 +152,23 @@ public class ElasticDbContext : IElasticDbContext
     }
 
 
-    public async Task<bool> RemoveDocByKeyAsync(string key,
-                                             string indexName,
-                                             CancellationToken cancellationToken = default)
+    public async Task<bool> RemoveDocByKeyAsync<T>(
+        string key,
+        string keyword,
+        string indexName,
+        CancellationToken cancellationToken = default)
     {
-        var response = await _elasticsearchClient.DeleteAsync(key,
-                                                    d => d.Index(indexName),
-                                                    cancellationToken);
+        var response = await _elasticsearchClient.DeleteByQueryAsync<T>(
+            d => d.Indices(indexName)
+                  .Query(q => q.Match(m => m.Field(f => f.Suffix(key))
+                                            .Query(keyword))
+                  ),
+            cancellationToken);
 
         if (!response.IsValidResponse)
         {
-            _logger.LogError("Failed to Remove Document By Key. Error: {@Error}, at {Time} UTC",
+            _logger.LogError("Failed to Remove All Documents from {Index}. Error: {@Error}, at {Time} UTC",
+                             indexName,
                              response.ElasticsearchServerError,
                              DateTime.UtcNow.ToString());
         }

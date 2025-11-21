@@ -1,8 +1,9 @@
 ﻿using Elastic.Clients.Elasticsearch;
 using Microsoft.Extensions.Options;
-using Web.Api.Settings;
+using Infrastructure.Database.Settings;
+using Microsoft.Extensions.Logging;
 
-namespace Web.Api.ElasticDatabase;
+namespace Infrastructure.Database.Data;
 
 public class ElasticDbSet<T> : IElasticDbSet<T>
 {

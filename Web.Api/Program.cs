@@ -1,15 +1,14 @@
+using Infrastructure.Database;
 using Logging.Common;
 using Serilog;
-using Web.Api.ElasticDatabase;
-using Web.Api.Settings;
+using Web.Api.ElasticDatabaseV2;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.Configure<ElasticSettings>(builder.Configuration.GetSection(nameof(ElasticSettings)));
+builder.Services.AddInfrastructureDatabase();
 
-builder.Services.AddScoped<IElasticDbContext, ElasticDbContext>();
-builder.Services.AddScoped(typeof(IElasticDbSet<>), typeof(ElasticDbSet<>));
+builder.Services.AddScoped(typeof(IElasticService<>), typeof(ElasticService<>));
 
 // Configure Serilog
 builder.ConfigureSerilog("Web.Api")
@@ -17,6 +16,7 @@ builder.ConfigureSerilog("Web.Api")
 builder.Host.UseSerilog();
 
 builder.Services.AddControllers();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
